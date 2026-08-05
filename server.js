@@ -1,13 +1,27 @@
+require("dotenv").config();
 const express = require("express");
 const Redis = require("ioredis");
 
 const app = express();
 const port = process.env.PORT || 3000;
-const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379", {
-  maxRetriesPerRequest: 2,
-  enableReadyCheck: true,
-  tls: process.env.REDIS_URL?.startsWith("rediss://") ? {} : undefined,
-});
+const redisUrl = process.env.REDIS_URL;
+let redis = null;
+let redisAvailable = false;
+
+if (redisUrl) {
+  redis = new Redis(redisUrl, {
+    lazyConnect: true,
+    connectTimeout: 10000,
+    maxRetriesPerRequest: 1,
+    // Do not retry forever when a hosted Redis instance is unavailable.
+    retryStrategy: () => null,
+    enableReadyCheck: true,
+    tls: redisUrl.startsWith("rediss://") ? {} : undefined,
+  });
+  redis.on("ready", () => { redisAvailable = true; console.log("Redis connection established."); });
+  redis.on("end", () => { redisAvailable = false; });
+  redis.on("error", () => { redisAvailable = false; });
+}
 
 const playerKey = (id) => `player:${id}`;
 const achievementKey = (id) => `player:${id}:achievements`;
@@ -16,8 +30,6 @@ const leaderboardKey = "leaderboard";
 
 app.use(express.json());
 app.use(express.static("public"));
-
-redis.on("error", (error) => console.error("Redis connection error:", error.message));
 
 function validatePlayer(body) {
   const playerId = String(body.playerId || "").trim().toUpperCase();
@@ -42,8 +54,17 @@ async function getPlayer(playerId) {
 }
 
 app.get("/api/health", async (_req, res) => {
+  if (!redisAvailable) return res.status(503).json({ status: "degraded", error: "Redis is unavailable. Set REDIS_URL to a hosted Redis connection string." });
   try { await redis.ping(); res.json({ status: "ok" }); }
-  catch { res.status(503).json({ error: "Redis is unavailable. Check REDIS_URL." }); }
+  catch { res.status(503).json({ status: "degraded", error: "Redis is unavailable. Check REDIS_URL." }); }
+});
+
+// The website can still deploy and load without Redis. Data endpoints return a
+// clear 503 until a Redis Cloud/Upstash URL is configured in the host dashboard.
+app.use("/api", (req, res, next) => {
+  if (req.path === "/health") return next();
+  if (!redisAvailable) return res.status(503).json({ error: "Database unavailable. Configure REDIS_URL and redeploy." });
+  next();
 });
 
 app.post("/api/players", async (req, res, next) => {
@@ -128,4 +149,11 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });
 
-app.listen(port, () => console.log(`Gaming profiles running on port ${port}`));
+app.listen(port, () => {
+  console.log(`Gaming profiles running on port ${port}`);
+  if (!redis) {
+    console.warn("REDIS_URL is not set. The site is online, but profile APIs are disabled until Redis is configured.");
+    return;
+  }
+  redis.connect().catch(() => console.warn("Redis could not be reached. Profile APIs will return 503 until it is available."));
+});
