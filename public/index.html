@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaming | Player Profiles</title>
+  <title>Gaming | Player Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -11,52 +11,47 @@
 </head>
 <body>
   <header class="nav">
-    <a class="brand" href="#top"><span>&#127918;</span> GAMING</a>
-    <nav><a href="#players">Players</a><a href="#leaderboard">Leaderboard</a></nav>
-    <div class="status"><i></i> Online</div>
+    <a class="brand" href="#players"><span>&#127918;</span> GAMING</a>
+    <div class="status"><i></i> Player Manager</div>
   </header>
-  <main id="top">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">WELCOME TO GAMING</p>
-        <h1>Your players.<br /><span>Your leaderboard.</span></h1>
-        <p>Save player profiles, achievements, scores, and temporary boosts in one simple place.</p>
-        <a class="primary" href="#players">Add a player &rarr;</a>
-      </div>
-      <div class="hero-card"><span class="trophy">&#127942;</span><strong>PLAY<br />TO WIN</strong><small>Track every score</small></div>
-    </section>
 
-    <section class="metrics">
-      <div><b id="playerCount">-</b><span>Total players</span></div>
-      <div><b id="topScore">-</b><span>Top score</span></div>
-      <div><b>60s</b><span>Boost duration</span></div>
-    </section>
-
+  <main>
     <section id="players" class="workspace">
       <div class="panel">
-        <p class="eyebrow">PLAYER FORM</p><h2 id="formTitle">Add player</h2>
+        <p class="eyebrow">ADD PLAYER</p>
+        <h2 id="formTitle">New player</h2>
         <form id="playerForm">
           <input type="hidden" id="editingId" />
           <label>Player ID<input id="playerId" maxlength="24" placeholder="P001" required /></label>
           <label>Username<input id="username" maxlength="40" placeholder="GamerX" required /></label>
-          <div class="two-col"><label>Level<input id="level" type="number" min="1" placeholder="15" required /></label><label>High score<input id="highScore" type="number" min="0" placeholder="9800" required /></label></div>
+          <div class="two-col">
+            <label>Level<input id="level" type="number" min="1" placeholder="15" required /></label>
+            <label>High score<input id="highScore" type="number" min="0" placeholder="9800" required /></label>
+          </div>
           <label>Achievements <small>Separate with commas</small><input id="achievements" placeholder="First Win, Level Master" /></label>
           <div class="form-actions"><button class="primary" type="submit" id="submitButton">Save player &rarr;</button><button type="button" class="text-button hidden" id="cancelEdit">Cancel</button></div>
         </form>
       </div>
+
       <div class="panel">
-        <p class="eyebrow">SEARCH PLAYER</p><h2>Player profile</h2>
-        <div class="search"><input id="searchId" placeholder="Enter player ID" /><button id="searchButton" aria-label="Search"> Search</button></div>
-        <div id="profileEmpty" class="empty-state">Search for a player to see their details here.</div>
+        <p class="eyebrow">SEARCH PLAYER</p>
+        <h2>Find a player</h2>
+        <div class="search"><input id="searchId" placeholder="Enter player ID (example: P001)" /><button id="searchButton" aria-label="Search player">Search</button></div>
+        <div id="profileEmpty" class="empty-state">Search for a player to view their profile.</div>
         <article id="playerCard" class="player-card hidden"></article>
       </div>
     </section>
 
     <section id="leaderboard" class="leaderboard-section">
-      <div class="section-heading"><div><p class="eyebrow">TOP PLAYERS</p><h2>Leaderboard &#127942;</h2></div><button id="refreshLeaderboard" class="outline-button">Refresh</button></div>
+      <div class="section-heading">
+        <div><p class="eyebrow">LEADERBOARD</p><h2>Top players &#127942;</h2></div>
+        <button id="refreshLeaderboard" class="outline-button">Refresh</button>
+      </div>
+      <div class="stats"><span><b id="playerCount">-</b> Players</span><span><b id="topScore">-</b> Top score</span></div>
       <div id="leaderboardList" class="leaderboard-list"><p class="empty-state">Loading players...</p></div>
     </section>
   </main>
+
   <footer>GAMING <span>Player Profile Management System</span></footer>
   <div id="toast" class="toast"></div>
   <script src="script.js"></script>
