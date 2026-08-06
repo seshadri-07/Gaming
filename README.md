@@ -1,4 +1,4 @@
-Gaming Player Profiles
+## Gaming Player Profiles
 
 A responsive Express and Redis player-profile manager. It supports creating, searching, updating, and deleting players; Redis `APPEND` achievements; TTL-based boosts; and a score-sorted leaderboard.
 
